@@ -25,3 +25,7 @@ val progressButton = ProgressButton(
 ```
 
 Of course you can change the buttonState anytime you want by using StreamBuilders and such. ProgressButton reacts accordingly to changes.
+
+![Demo 1](/demo1.gif?raw=true)
+
+![Demo 2](/demo2.gif?raw=true)

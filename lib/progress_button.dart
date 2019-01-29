@@ -3,6 +3,11 @@ library progress_button;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+
+/// A button that animates between state changes.
+/// Progress state is just a small circle with a progress indicator inside
+/// Error state is a vibrating error animation
+/// Normal state is the button itself
 class ProgressButton extends StatefulWidget {
   final VoidCallback onPressed;
   final String text;
@@ -27,10 +32,6 @@ class ProgressButton extends StatefulWidget {
 
 enum ButtonState { inProgress, error, normal }
 
-/// This button animates between state changes.
-/// Progress state is just a small circle with a progress indicator inside
-/// Error state is a vibrating error animation
-/// Normal state is the button itself
 class _ProgressButtonState extends State<ProgressButton>
     with TickerProviderStateMixin {
   AnimationController _errorAnimationController;
@@ -99,7 +100,7 @@ class _ProgressButtonState extends State<ProgressButton>
 
   /// A utility function to check whether an animation is running
   bool isAnimationRunning(AnimationController controller) {
-    return controller.isCompleted || controller.isDismissed;
+    return !(controller.isCompleted || controller.isDismissed);
   }
 
   @override
@@ -143,8 +144,8 @@ class _ProgressButtonState extends State<ProgressButton>
 
     Widget buttonContent = Container();
 
-    if (widget.buttonState != ButtonState.inProgress &&
-        isAnimationRunning(_progressAnimationController)) {
+    if (widget.buttonState != ButtonState.inProgress ||
+        !isAnimationRunning(_progressAnimationController)) {
       buttonContent = new Center(
         child: Text(
           widget.text,

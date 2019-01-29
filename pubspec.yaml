@@ -1,8 +1,8 @@
 name: progress_button
 description: A Material Flutter Button that indicates progress and error
 version: 0.0.1
-author:
-homepage:
+author: Halil Ozercan <halilozercan@gmail.com>
+homepage: https://github.com/halilozercan/progressbutton
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
