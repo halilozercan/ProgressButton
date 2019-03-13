@@ -9,18 +9,17 @@ ProgressButton is designed to be easy to use and customizable. Without going int
 - First, add dependency to your pubspec.yaml
 ```yaml
 dependencies:
-  progress_button: ^0.0.1
+  progress_button: ^0.0.2
 ```
 
 - Second, add progress button to your widget tree
 ```dart
 val progressButton = ProgressButton(
+    child: Text("Login"),
     onPressed: VoidCallback,
-    text: "Login",
     buttonState: ButtonState.normal,
-    pBackgroundColor: Theme.of(context).primaryColor,
-    pTextColor: Theme.of(context).primaryTextTheme.button.color,
-    pProgressColor: Theme.of(context).primaryColor,
+    backgroundColor: Theme.of(context).primaryColor,
+    progressColor: Theme.of(context).primaryColor,
 );
 ```
 

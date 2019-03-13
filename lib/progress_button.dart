@@ -10,20 +10,18 @@ import 'package:flutter/widgets.dart';
 /// Normal state is the button itself
 class ProgressButton extends StatefulWidget {
   final VoidCallback onPressed;
-  final String text;
   final ButtonState buttonState;
-  final Color pBackgroundColor;
-  final Color pTextColor;
-  final Color pProgressColor;
+  final Widget child;
+  final Color backgroundColor;
+  final Color progressColor;
 
   ProgressButton(
       {Key key,
-        @required this.text,
         @required this.buttonState,
         @required this.onPressed,
-        this.pBackgroundColor,
-        this.pTextColor,
-        this.pProgressColor})
+        this.child,
+        this.backgroundColor,
+        this.progressColor})
       : super(key: key);
 
   @override
@@ -42,9 +40,15 @@ class _ProgressButtonState extends State<ProgressButton>
 
   double get buttonWidth => _widthAnimation.value ?? 0;
   BorderRadius get borderRadius => _borderAnimation.value ?? BorderRadius.circular(12);
-  Color get backgroundColor => widget.pBackgroundColor ?? Theme.of(context).primaryColor;
-  Color get textColor => widget.pTextColor ?? Colors.white;
-  Color get progressColor => widget.pProgressColor ?? Colors.white;
+
+  Color get backgroundColor =>
+      widget.backgroundColor ?? Theme
+          .of(context)
+          .primaryColor;
+
+  Color get progressColor => widget.progressColor ?? Colors.white;
+
+  Widget get child => widget.child ?? Container();
 
   @override
   void initState() {
@@ -142,29 +146,23 @@ class _ProgressButtonState extends State<ProgressButton>
       curve: Curves.linear,
     ));
 
-    Widget buttonContent = Container();
+    Widget buttonContent;
 
     if (widget.buttonState != ButtonState.inProgress ||
         !isAnimationRunning(_progressAnimationController)) {
-      buttonContent = new Center(
-        child: Text(
-          widget.text,
-          style: TextStyle(color: textColor),
-        ),
-      );
+      buttonContent = child;
+
     } else if (widget.buttonState == ButtonState.inProgress) {
-      buttonContent = Center(
-          child: SizedBox(
-              height: buttonHeight,
-              width: buttonHeight, // needs to be a square container
-              child: Padding(
-                padding: EdgeInsets.all(8),
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                      progressColor ?? Colors.white),
-                  strokeWidth: 3,
-                ),
-              )
+      buttonContent = SizedBox(
+          height: buttonHeight,
+          width: buttonHeight, // needs to be a square container
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  progressColor ?? Colors.white),
+              strokeWidth: 3,
+            ),
           )
       );
     }
@@ -183,11 +181,10 @@ class _ProgressButtonState extends State<ProgressButton>
                 decoration: BoxDecoration(
                     borderRadius: borderRadius,
                     color: backgroundColor),
-                child: buttonContent,
+                child: Center(child: buttonContent),
               ),
             ));
       },
     );
   }
 }
-
