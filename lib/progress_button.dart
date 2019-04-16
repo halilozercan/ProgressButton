@@ -104,7 +104,7 @@ class _ProgressButtonState extends State<ProgressButton>
 
   /// A utility function to check whether an animation is running
   bool isAnimationRunning(AnimationController controller) {
-    return !controller.isCompleted && !controller.isDismissed;
+    return controller.isCompleted && controller.isDismissed;
   }
 
   @override
