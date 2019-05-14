@@ -148,8 +148,7 @@ class _ProgressButtonState extends State<ProgressButton>
 
     Widget buttonContent;
 
-    if (widget.buttonState != ButtonState.inProgress ||
-        !isAnimationRunning(_progressAnimationController)) {
+    if (widget.buttonState != ButtonState.inProgress) {
       buttonContent = child;
 
     } else if (widget.buttonState == ButtonState.inProgress) {
