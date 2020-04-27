@@ -12,17 +12,29 @@ class ProgressButton extends StatefulWidget {
   final VoidCallback onPressed;
   final ButtonState buttonState;
   final Widget child;
-  final Color backgroundColor;
-  final Color progressColor;
 
-  ProgressButton(
-      {Key key,
-        @required this.buttonState,
-        @required this.onPressed,
-        this.child,
-        this.backgroundColor,
-        this.progressColor})
-      : super(key: key);
+  final BoxDecoration decoration;
+  final Color progressColor;
+  final BorderRadius borderRadius;
+
+  final int progressAnimationDuration;
+  final int errorAnimationDuration;
+  final double errorAnimationSwingFactor;
+  final int errorAnimationSwingCount;
+
+  ProgressButton({
+    Key key,
+    @required this.buttonState,
+    @required this.onPressed,
+    this.child,
+    this.decoration,
+    this.progressColor,
+    this.borderRadius,
+    this.progressAnimationDuration = 200,
+    this.errorAnimationDuration = 400,
+    this.errorAnimationSwingFactor = 0.03,
+    this.errorAnimationSwingCount = 2,
+  }) : super(key: key);
 
   @override
   _ProgressButtonState createState() => _ProgressButtonState();
@@ -39,12 +51,24 @@ class _ProgressButtonState extends State<ProgressButton>
   Animation<double> _widthAnimation;
 
   double get buttonWidth => _widthAnimation.value ?? 0;
-  BorderRadius get borderRadius => _borderAnimation.value ?? BorderRadius.circular(12);
+  BorderRadius get widgetBorderRadius => widget.borderRadius ?? BorderRadius.circular(8);
+  BorderRadius get borderRadius => _borderAnimation.value ?? widgetBorderRadius;
 
-  Color get backgroundColor =>
-      widget.backgroundColor ?? Theme
-          .of(context)
-          .primaryColor;
+  BoxDecoration get widgetDecoration {
+    if(widget.decoration != null) {
+      return widget.decoration.copyWith(
+        color: widget.decoration.color ?? Theme
+            .of(context)
+            .primaryColor
+      );
+    } else {
+      return BoxDecoration(
+        color: Theme
+            .of(context)
+            .primaryColor
+      );
+    }
+  }
 
   Color get progressColor => widget.progressColor ?? Colors.white;
 
@@ -55,26 +79,38 @@ class _ProgressButtonState extends State<ProgressButton>
     super.initState();
 
     _errorAnimationController = new AnimationController(
-        vsync: this, duration: Duration(milliseconds: 400));
+        vsync: this, duration: Duration(milliseconds: widget.errorAnimationDuration));
 
     _progressAnimationController = new AnimationController(
-        vsync: this, duration: Duration(milliseconds: 200));
+        vsync: this, duration: Duration(milliseconds: widget.progressAnimationDuration));
 
     // Define errorAnimation sequence
+    final rightToLeftSwing = TweenSequenceItem<Offset>(
+      tween: Tween(begin: Offset(widget.errorAnimationSwingFactor, 0), end: Offset(-widget.errorAnimationSwingFactor, 0)),
+      weight: 2
+    );
+    final leftToRightSwing = TweenSequenceItem<Offset>(
+      tween:Tween(begin: Offset(-widget.errorAnimationSwingFactor, 0), end: Offset(widget.errorAnimationSwingFactor, 0)),
+      weight: 2
+    );
+
+    final startSwing = TweenSequenceItem<Offset>(
+      tween: Tween(begin: Offset(0, 0), end: Offset(widget.errorAnimationSwingFactor, 0)), 
+      weight: 1
+    );
+    final endSwing = TweenSequenceItem<Offset>(
+      tween: Tween(begin: Offset(-widget.errorAnimationSwingFactor, 0), end: Offset(0, 0)),
+      weight: 1
+    );
+
+    final fullSwing = [leftToRightSwing, rightToLeftSwing,];
+
     _errorAnimation = TweenSequence<Offset>([
-      TweenSequenceItem<Offset>(
-          tween: Tween(begin: Offset(0, 0), end: Offset(0.03, 0)), weight: 1),
-      TweenSequenceItem<Offset>(
-          tween: Tween(begin: Offset(0.03, 0), end: Offset(-0.03, 0)),
-          weight: 2),
-      TweenSequenceItem<Offset>(
-          tween: Tween(begin: Offset(-0.03, 0), end: Offset(0.03, 0)),
-          weight: 2),
-      TweenSequenceItem<Offset>(
-          tween: Tween(begin: Offset(0.03, 0), end: Offset(-0.03, 0)),
-          weight: 2),
-      TweenSequenceItem<Offset>(
-          tween: Tween(begin: Offset(-0.03, 0), end: Offset(0, 0)), weight: 1)
+      startSwing,
+      rightToLeftSwing,
+      // We start from since we already make a single swing by begin, rightToLeft, end sequence.
+      for(var i = 1; i < widget.errorAnimationSwingCount; i++) ...fullSwing,
+      endSwing,
     ]).animate(CurvedAnimation(
       parent: _errorAnimationController,
       curve: Curves.linear,
@@ -108,6 +144,13 @@ class _ProgressButtonState extends State<ProgressButton>
   }
 
   @override
+  void dispose() {
+    _errorAnimationController.dispose();
+    _progressAnimationController.dispose();
+    super.dispose();
+  }
+  
+  @override
   Widget build(BuildContext context) {
     return getErrorAnimatedBuilder();
   }
@@ -132,7 +175,7 @@ class _ProgressButtonState extends State<ProgressButton>
     // These animation configurations can be tweaked to have
     // however you like it
     _borderAnimation = BorderRadiusTween(
-        begin: BorderRadius.circular(buttonHeight / 6),
+        begin: widgetBorderRadius,
         end: BorderRadius.circular(buttonHeight / 2))
         .animate(CurvedAnimation(
         parent: _progressAnimationController,
@@ -170,19 +213,17 @@ class _ProgressButtonState extends State<ProgressButton>
       animation: _progressAnimationController,
       builder: (context, child) {
         return InkWell(
-            onTap: widget.onPressed,
-            borderRadius: borderRadius,
-            // this fixes the ripple effect
-            child: Center(
-              child: Ink(
-                width: buttonWidth,
-                height: buttonHeight,
-                decoration: BoxDecoration(
-                    borderRadius: borderRadius,
-                    color: backgroundColor),
-                child: Center(child: buttonContent),
-              ),
-            ));
+          onTap: widget.onPressed,
+          borderRadius: borderRadius,
+          // this fixes the ripple effect
+          child: Ink(
+            width: buttonWidth,
+            height: buttonHeight,
+            decoration: widgetDecoration.copyWith(
+              borderRadius: borderRadius
+            ),
+            child: Center(child: buttonContent),
+          ));
       },
     );
   }
